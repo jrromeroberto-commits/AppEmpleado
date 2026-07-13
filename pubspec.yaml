@@ -41,7 +41,8 @@ dependencies:
   flutter_secure_storage: ^10.3.1
   intl: ^0.20.3
   fl_chart: ^1.2.0
-  file_picker: ^3.0.4
+  package_info_plus: ^10.2.0
+  video_player: ^2.12.0
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,31 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
+
+# Icono de la app. Se regenera con: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  # En Android 8+ el icono se recorta con una máscara (círculo, squircle...).
+  # Se usa el negro del logo como fondo para que el recorte no deje bordes.
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  remove_alpha_ios: true
+
+# Splash nativo: elimina el destello blanco entre el toque al icono y el
+# arranque de Flutter. Se regenera con: dart run flutter_native_splash:create
+# El color es negro puro para empalmar sin costura con el splash de Flutter
+# (ver AppColors.negroSplash y features/splash/splash_screen.dart).
+flutter_native_splash:
+  color: "#000000"
+  image: assets/images/logo.png
+  android_12:
+    color: "#000000"
+    image: assets/images/logo.png
+    icon_background_color: "#000000"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -65,10 +91,9 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
+    - assets/video/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
