@@ -65,9 +65,6 @@ class MockAsistencia {
       esHoy: true,
     ),
   ];
-
-  /// Hora de entrada de la empresa. Será configurable desde el panel de
-  /// administración (ver ARQUITECTURA.md, sección 6.C.6).
   static const horaEntrada = '9:00 a. m.';
   static const zonaHoraria = 'Peru';
 

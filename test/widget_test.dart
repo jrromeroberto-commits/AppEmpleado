@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:app_asistencia/core/router/empleado_shell.dart';
+import 'package:app_asistencia/features/asistencia/data/mock_asistencia.dart';
 import 'package:app_asistencia/features/auth/domain/tipo_documento.dart';
 import 'package:app_asistencia/features/auth/presentation/reset_password_page.dart';
 import 'package:app_asistencia/features/auth/presentation/widgets/codigo_input.dart';
 import 'package:app_asistencia/features/auth/presentation/widgets/recuperar_password_sheet.dart';
+import 'package:app_asistencia/features/perfil/domain/genero.dart';
+import 'package:app_asistencia/features/perfil/presentation/cambiar_password_page.dart';
+import 'package:app_asistencia/features/perfil/presentation/widgets/redes_sociales_sheet.dart';
 import 'package:app_asistencia/main.dart';
 
 Future<void> _irAlOnboarding(WidgetTester tester) async {
@@ -23,10 +27,6 @@ Future<void> _irAlLogin(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// Desliza a la página siguiente del onboarding.
-///
-/// Se usa `fling` (con velocidad) y no `drag`: un arrastre lento que no supera
-/// media pantalla hace que el PageView rebote a la página original.
 Future<void> _deslizar(WidgetTester tester, {bool atras = false}) async {
   await tester.fling(
     find.byType(PageView),
@@ -76,6 +76,31 @@ Future<void> _irAlHome(WidgetTester tester) async {
   await tester.enterText(_campoDocumento, '12345678');
   await tester.enterText(_campoPassword, 'secreta');
   await tester.tap(find.text('Continue'));
+  await tester.pumpAndSettle();
+}
+
+/// Abre la pestaña Profile.
+Future<void> _irAlPerfil(WidgetTester tester) async {
+  await _irAlHome(tester);
+  await tester.tap(find.text('Profile'));
+  await tester.pumpAndSettle();
+}
+
+/// Desplaza el perfil hasta que [objetivo] exista y sea visible.
+Future<void> _scrollPerfil(WidgetTester tester, Finder objetivo) async {
+  await tester.scrollUntilVisible(
+    objetivo,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Abre la pantalla de cambiar contraseña desde el perfil.
+Future<void> _irAlCambiarPassword(WidgetTester tester) async {
+  await _irAlPerfil(tester);
+  await _scrollPerfil(tester, find.text('Change password'));
+  await tester.tap(find.text('Change password'));
   await tester.pumpAndSettle();
 }
 
@@ -405,33 +430,40 @@ void main() {
 
   // ---- Home del empleado ----
 
+  // Los tests leen los valores de MockAsistencia en vez de tenerlos escritos a
+  // mano: así siguen pasando si se cambian los datos provisionales.
+
   testWidgets('El Home muestra la cabecera del empleado', (tester) async {
     await _irAlHome(tester);
 
-    expect(find.text('Mitchell Santos'), findsOneWidget);
-    expect(find.text('Employee'), findsOneWidget);
+    expect(find.text(MockAsistencia.empleado.nombre), findsOneWidget);
+    expect(find.text(MockAsistencia.empleado.rol.etiqueta), findsOneWidget);
   });
 
   testWidgets('El Home muestra el resumen del mes', (tester) async {
     await _irAlHome(tester);
 
+    final porcentaje =
+        (MockAsistencia.resumen.porcentajeTardanzas * 100).round();
+
     expect(find.text('Monthly attendance'), findsOneWidget);
     expect(find.text('July 2025'), findsOneWidget);
-    // 4 tardanzas sobre 25 días con registro = 16%.
-    expect(find.text('16%'), findsOneWidget);
+    expect(find.text('$porcentaje%'), findsOneWidget);
     expect(find.text('Late arrivals'), findsOneWidget);
   });
 
   testWidgets('El Home muestra los cuatro contadores', (tester) async {
     await _irAlHome(tester);
 
+    final resumen = MockAsistencia.resumen;
+
     expect(find.text('Absences'), findsOneWidget);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('${resumen.faltas}'), findsWidgets);
     expect(find.text('Late'), findsOneWidget);
-    expect(find.text('4'), findsOneWidget);
-    expect(find.text('20'), findsOneWidget);
+    expect(find.text('${resumen.tardanzas}'), findsWidgets);
+    expect(find.text('${resumen.asistencias}'), findsWidgets);
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text('Present'), findsWidgets);
+    expect(find.text(resumen.estadoHoy.etiqueta), findsWidgets);
   });
 
   testWidgets('El Home muestra las últimas marcas', (tester) async {
@@ -474,15 +506,179 @@ void main() {
   testWidgets('Cambiar de pestaña muestra el placeholder', (tester) async {
     await _irAlHome(tester);
 
-    await tester.tap(find.text('Profile'));
+    await tester.tap(find.text('Attendance'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Coming in phase A.4'), findsOneWidget);
-    // El Home sigue vivo detrás: IndexedStack lo conserva, pero "offstage",
-    // así que hay que pedir explícitamente que no se omita.
-    expect(
-      find.text('Mitchell Santos', skipOffstage: false),
-      findsOneWidget,
+    expect(find.text('Coming in phase A.2'), findsOneWidget);
+  });
+
+  // ---- Perfil ----
+
+  testWidgets('La pestaña Profile muestra las tres secciones', (tester) async {
+    await _irAlPerfil(tester);
+
+    expect(find.text('Personal information'), findsOneWidget);
+
+    // El ListView construye perezosamente: hay que desplazarse para que las
+    // secciones de abajo lleguen a existir en el árbol.
+    await _scrollPerfil(tester, find.text('Security'));
+    expect(find.text('Security'), findsOneWidget);
+
+    await _scrollPerfil(tester, find.text('About'));
+    expect(find.text('About'), findsOneWidget);
+  });
+
+  testWidgets('La información personal son campos rellenables', (tester) async {
+    await _irAlPerfil(tester);
+
+    expect(find.text('First name'), findsOneWidget);
+    expect(find.text('Last name'), findsOneWidget);
+    expect(find.text('Date of birth'), findsOneWidget);
+    expect(find.text('Age'), findsOneWidget);
+    expect(find.text('Gender'), findsOneWidget);
+
+    await _scrollPerfil(tester, find.text('Save changes'));
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Area'), findsOneWidget);
+    expect(find.text('Position'), findsOneWidget);
+    expect(find.byType(DropdownButtonFormField<Genero>), findsOneWidget);
+  });
+
+  testWidgets('Guardar con campos vacíos muestra errores', (tester) async {
+    await _irAlPerfil(tester);
+    await _scrollPerfil(tester, find.text('Save changes'));
+
+    await tester.tap(find.text('Save changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Enter your first name'), findsWidgets);
+    expect(find.text('Enter your email'), findsWidgets);
+    expect(find.text('Profile updated'), findsNothing);
+  });
+
+  testWidgets('El correo valida su formato', (tester) async {
+    await _irAlPerfil(tester);
+    await _scrollPerfil(tester, find.text('Save changes'));
+
+    final campoCorreo = find.ancestor(
+      of: find.text('Enter your email'),
+      matching: find.byType(TextFormField),
     );
+    await tester.enterText(campoCorreo, 'correo-malo');
+    await tester.tap(find.text('Save changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Invalid email format'), findsOneWidget);
+  });
+
+  testWidgets('La foto abre el selector de origen', (tester) async {
+    await _irAlPerfil(tester);
+
+    await tester.tap(find.text('Add photo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Profile photo'), findsOneWidget);
+    expect(find.text('Take a photo'), findsOneWidget);
+    expect(find.text('Choose from gallery'), findsOneWidget);
+  });
+
+  testWidgets('El switch de biometría cambia de estado', (tester) async {
+    await _irAlPerfil(tester);
+    await _scrollPerfil(tester, find.byType(Switch));
+
+    expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Switch>(find.byType(Switch)).value, isTrue);
+  });
+
+  testWidgets('Change password abre su pantalla', (tester) async {
+    await _irAlCambiarPassword(tester);
+
+    expect(find.byType(CambiarPasswordPage), findsOneWidget);
+    expect(find.text('Current password'), findsOneWidget);
+    expect(find.text('New password'), findsOneWidget);
+    expect(find.text('Repeat password'), findsOneWidget);
+  });
+
+  testWidgets('La contraseña nueva no puede ser igual a la actual', (
+    tester,
+  ) async {
+    await _irAlCambiarPassword(tester);
+
+    final campos = find.descendant(
+      of: find.byType(CambiarPasswordPage),
+      matching: find.byType(TextFormField),
+    );
+    await tester.enterText(campos.at(0), 'password123');
+    await tester.enterText(campos.at(1), 'password123');
+    await tester.enterText(campos.at(2), 'password123');
+
+    await tester.ensureVisible(find.text('Save password'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save password'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('The new password must be different'), findsOneWidget);
+  });
+
+  testWidgets('Sign out pide confirmación antes de salir', (tester) async {
+    await _irAlPerfil(tester);
+    await _scrollPerfil(tester, find.text('Sign out'));
+
+    await tester.tap(find.text('Sign out').first);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Are you sure you want to sign out?'), findsOneWidget);
+
+    // Cancelar deja al usuario donde estaba.
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(EmpleadoShell), findsOneWidget);
+  });
+
+  testWidgets('Confirmar Sign out devuelve al login', (tester) async {
+    await _irAlPerfil(tester);
+    await _scrollPerfil(tester, find.text('Sign out'));
+
+    await tester.tap(find.text('Sign out').first);
+    await tester.pumpAndSettle();
+
+    // El botón del diálogo (el último "Sign out" de la pantalla).
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(TextButton, 'Sign out'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Attendance Control'), findsOneWidget);
+    // La sesión se descarta por completo: no queda el shell detrás.
+    expect(find.byType(EmpleadoShell, skipOffstage: false), findsNothing);
+    // Tampoco se vuelve a pasar por el onboarding.
+    expect(find.text('Welcome to Runway 7 Club'), findsNothing);
+  });
+
+  testWidgets('Social networks abre la hoja inferior', (tester) async {
+    await _irAlPerfil(tester);
+    await _scrollPerfil(tester, find.text('Social networks'));
+
+    await tester.tap(find.text('Social networks'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RedesSocialesSheet), findsOneWidget);
+    // Una sola opción en About que abre la hoja con las 5 redes.
+    expect(find.text('Instagram'), findsOneWidget);
+    expect(find.text('LinkedIn'), findsOneWidget);
+    expect(find.text('X (Twitter)'), findsOneWidget);
+    expect(find.text('Facebook'), findsOneWidget);
+    expect(find.text('TikTok'), findsOneWidget);
+    expect(find.text('Save'), findsOneWidget);
   });
 }

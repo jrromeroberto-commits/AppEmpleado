@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../features/home/presentation/home_page.dart';
+import '../../features/perfil/presentation/perfil_page.dart';
 import '../widgets/pagina_pendiente.dart';
 
 class EmpleadoShell extends StatefulWidget {
@@ -25,11 +26,7 @@ class _EmpleadoShellState extends State<EmpleadoShell> {
       icono: Icons.groups_outlined,
       fase: 'A.3',
     ),
-    PaginaPendiente(
-      titulo: 'Profile',
-      icono: Icons.person_outline,
-      fase: 'A.4',
-    ),
+    PerfilPage(),
   ];
 
   @override
