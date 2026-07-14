@@ -190,14 +190,14 @@ class OnboardingAsistencia extends StatelessWidget {
 
   Widget _resumenSemanal() {
     const dias = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    // Estado de ejemplo: 5 días a tiempo, 1 tarde, 1 sin marcar.
+   
     const estados = [
       Icons.check_circle_outline,
       Icons.check_circle_outline,
       Icons.check_circle_outline,
       Icons.check_circle_outline,
       Icons.check_circle_outline,
-      Icons.schedule,
+      Icons.check_circle_outline,
       Icons.circle_outlined,
     ];
     const colores = [
@@ -206,7 +206,7 @@ class OnboardingAsistencia extends StatelessWidget {
       AppColors.verde,
       AppColors.verde,
       AppColors.verde,
-      AppColors.primary,
+      AppColors.ambar,
       AppColors.borde,
     ];
 

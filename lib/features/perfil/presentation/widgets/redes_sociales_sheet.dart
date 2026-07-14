@@ -1,27 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/config/enlaces_empresa.dart';
 import '../../../../core/theme/app_colors.dart';
 
-/// Una red social del perfil.
-class _Red {
-  const _Red({required this.nombre, required this.icono, required this.hint});
 
-  final String nombre;
-  final IconData icono;
-  final String hint;
-}
-
-/// Hoja inferior para añadir los perfiles de redes sociales.
-///
-/// Se abre con [mostrar]. Maquetación: los valores aún no se guardan.
-class RedesSocialesSheet extends StatefulWidget {
+class RedesSocialesSheet extends StatelessWidget {
   const RedesSocialesSheet({super.key});
 
   static Future<void> mostrar(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.tarjeta,
-      // La hoja crece con el contenido y sube con el teclado.
+      // La lista es larga: sin esto la hoja se limitaría a media pantalla.
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -30,108 +21,78 @@ class RedesSocialesSheet extends StatefulWidget {
     );
   }
 
-  @override
-  State<RedesSocialesSheet> createState() => _RedesSocialesSheetState();
-}
+  Future<void> _abrir(BuildContext context, RedSocial red) async {
+    final uri = Uri.parse(red.url);
+    final abierto = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
 
-class _RedesSocialesSheetState extends State<RedesSocialesSheet> {
-  static const _redes = <_Red>[
-    _Red(
-      nombre: 'Instagram',
-      icono: Icons.camera_alt_outlined,
-      hint: '@username',
-    ),
-    _Red(
-      nombre: 'LinkedIn',
-      icono: Icons.work_outline,
-      hint: 'linkedin.com/in/username',
-    ),
-    _Red(
-      nombre: 'X (Twitter)',
-      icono: Icons.alternate_email,
-      hint: '@username',
-    ),
-    _Red(
-      nombre: 'Facebook',
-      icono: Icons.facebook_outlined,
-      hint: 'facebook.com/username',
-    ),
-    _Red(
-      nombre: 'TikTok',
-      icono: Icons.music_note_outlined,
-      hint: '@username',
-    ),
-  ];
+    if (abierto || !context.mounted) return;
 
-  late final Map<String, TextEditingController> _controllers = {
-    for (final red in _redes) red.nombre: TextEditingController(),
-  };
-
-  @override
-  void dispose() {
-    for (final c in _controllers.values) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  void _guardar() {
-    // TODO(backend): guardar las redes sociales del perfil.
-    Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Social networks saved')),
+      SnackBar(content: Text('Could not open ${red.nombre}')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final alturaTeclado = MediaQuery.viewInsetsOf(context).bottom;
-    final alturaMaxima = MediaQuery.sizeOf(context).height * 0.85;
+    final alturaMaxima = MediaQuery.sizeOf(context).height * 0.8;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: alturaTeclado),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: alturaMaxima),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              _asa(),
-              const SizedBox(height: 20),
-              _encabezado(),
-              const SizedBox(height: 20),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      for (final red in _redes) ...[
-                        _campo(red),
-                        const SizedBox(height: 16),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _guardar,
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: alturaMaxima),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            _asa(),
+            const SizedBox(height: 20),
+            _encabezado(),
+            const SizedBox(height: 12),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: EnlacesEmpresa.redes.length,
+                separatorBuilder: (_, _) =>
+                    const Divider(height: 1, color: AppColors.borde),
+                itemBuilder: (context, i) {
+                  final red = EnlacesEmpresa.redes[i];
+                  return ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        red.icono,
+                        size: 20,
+                        color: AppColors.primary,
                       ),
                     ),
-                  ),
-                ),
+                    title: Text(
+                      red.nombre,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.texto,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.open_in_new,
+                      size: 18,
+                      color: AppColors.textoS,
+                    ),
+                    onTap: () => _abrir(context, red),
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+          ],
         ),
       ),
     );
@@ -148,7 +109,7 @@ class _RedesSocialesSheetState extends State<RedesSocialesSheet> {
               Icon(Icons.share_outlined, size: 24, color: AppColors.primary),
               SizedBox(width: 10),
               Text(
-                'Social networks',
+                'Follow us',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -159,8 +120,7 @@ class _RedesSocialesSheetState extends State<RedesSocialesSheet> {
           ),
           SizedBox(height: 8),
           Text(
-            'Add the profiles you want to share with your team. '
-            'All fields are optional.',
+            'Runway 7 Fashion on social media.',
             style: TextStyle(
               fontSize: 14,
               height: 1.45,
@@ -168,19 +128,6 @@ class _RedesSocialesSheetState extends State<RedesSocialesSheet> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _campo(_Red red) {
-    return TextFormField(
-      controller: _controllers[red.nombre],
-      style: const TextStyle(color: AppColors.texto),
-      decoration: InputDecoration(
-        labelText: red.nombre,
-        labelStyle: const TextStyle(color: AppColors.textoS),
-        hintText: red.hint,
-        prefixIcon: Icon(red.icono, color: AppColors.primary),
       ),
     );
   }

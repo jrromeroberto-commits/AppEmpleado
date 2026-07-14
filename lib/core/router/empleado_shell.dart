@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../features/asistencia/presentation/asistencia_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/perfil/presentation/perfil_page.dart';
 import '../widgets/pagina_pendiente.dart';
 
+enum _Pestana { inicio, asistencia, rrhh, perfil }
 class EmpleadoShell extends StatefulWidget {
   const EmpleadoShell({super.key});
 
@@ -12,32 +14,33 @@ class EmpleadoShell extends StatefulWidget {
 }
 
 class _EmpleadoShellState extends State<EmpleadoShell> {
-  int _indice = 0;
+  _Pestana _actual = _Pestana.inicio;
 
-  static const _paginas = <Widget>[
-    HomePage(),
-    PaginaPendiente(
-      titulo: 'Attendance',
-      icono: Icons.event_available_outlined,
-      fase: 'A.2',
-    ),
-    PaginaPendiente(
-      titulo: 'HR',
-      icono: Icons.groups_outlined,
-      fase: 'A.3',
-    ),
-    PerfilPage(),
-  ];
+  void _irA(_Pestana pestana) => setState(() => _actual = pestana);
 
   @override
   Widget build(BuildContext context) {
+    final paginas = <Widget>[
+      HomePage(
+        onIrAAsistencia: () => _irA(_Pestana.asistencia),
+        onIrARrhh: () => _irA(_Pestana.rrhh),
+      ),
+      AsistenciaPage(onIrARrhh: () => _irA(_Pestana.rrhh)),
+      const PaginaPendiente(
+        titulo: 'HR',
+        icono: Icons.groups_outlined,
+        fase: 'A.3',
+      ),
+      const PerfilPage(),
+    ];
+
     return Scaffold(
       // IndexedStack conserva el estado de cada pestaña (scroll, formularios)
-      // al cambiar entre ellas, cosa que no haría un simple _paginas[_indice].
-      body: IndexedStack(index: _indice, children: _paginas),
+      // al cambiar entre ellas, cosa que no haría un simple paginas[indice].
+      body: IndexedStack(index: _actual.index, children: paginas),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _indice,
-        onDestinationSelected: (i) => setState(() => _indice = i),
+        selectedIndex: _actual.index,
+        onDestinationSelected: (i) => _irA(_Pestana.values[i]),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
@@ -45,8 +48,8 @@ class _EmpleadoShellState extends State<EmpleadoShell> {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.event_available_outlined),
-            selectedIcon: Icon(Icons.event_available),
+            icon: Icon(Icons.schedule_outlined),
+            selectedIcon: Icon(Icons.schedule),
             label: 'Attendance',
           ),
           NavigationDestination(

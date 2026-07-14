@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:app_asistencia/core/config/enlaces_empresa.dart';
 import 'package:app_asistencia/core/router/empleado_shell.dart';
 import 'package:app_asistencia/features/asistencia/data/mock_asistencia.dart';
+import 'package:app_asistencia/features/asistencia/domain/dia_asistencia.dart';
+import 'package:app_asistencia/features/asistencia/presentation/asistencia_page.dart';
+import 'package:app_asistencia/features/asistencia/presentation/calendario_page.dart';
+import 'package:app_asistencia/features/asistencia/presentation/widgets/estado_dia_visual.dart';
+import 'package:app_asistencia/features/home/presentation/home_page.dart';
 import 'package:app_asistencia/features/auth/domain/tipo_documento.dart';
 import 'package:app_asistencia/features/auth/presentation/reset_password_page.dart';
 import 'package:app_asistencia/features/auth/presentation/widgets/codigo_input.dart';
 import 'package:app_asistencia/features/auth/presentation/widgets/recuperar_password_sheet.dart';
 import 'package:app_asistencia/features/perfil/domain/genero.dart';
 import 'package:app_asistencia/features/perfil/presentation/cambiar_password_page.dart';
+import 'package:app_asistencia/features/perfil/presentation/informacion_personal_page.dart';
+import 'package:app_asistencia/features/perfil/presentation/widgets/perfil_foto.dart';
 import 'package:app_asistencia/features/perfil/presentation/widgets/redes_sociales_sheet.dart';
 import 'package:app_asistencia/main.dart';
 
@@ -79,6 +87,23 @@ Future<void> _irAlHome(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Desplaza el Home hasta que [objetivo] exista y sea visible.
+Future<void> _scrollHome(WidgetTester tester, Finder objetivo) async {
+  await tester.scrollUntilVisible(
+    objetivo,
+    300,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Abre la pestaña Attendance.
+Future<void> _irAAsistencia(WidgetTester tester) async {
+  await _irAlHome(tester);
+  await tester.tap(find.byIcon(Icons.schedule_outlined));
+  await tester.pumpAndSettle();
+}
+
 /// Abre la pestaña Profile.
 Future<void> _irAlPerfil(WidgetTester tester) async {
   await _irAlHome(tester);
@@ -93,6 +118,13 @@ Future<void> _scrollPerfil(WidgetTester tester, Finder objetivo) async {
     200,
     scrollable: find.byType(Scrollable).first,
   );
+  await tester.pumpAndSettle();
+}
+
+/// Abre la pantalla del formulario de información personal.
+Future<void> _irAlInformacion(WidgetTester tester) async {
+  await _irAlPerfil(tester);
+  await tester.tap(find.text('Personal information'));
   await tester.pumpAndSettle();
 }
 
@@ -476,21 +508,41 @@ void main() {
     expect(find.text('18:07'), findsWidgets);
   });
 
-  testWidgets('El Home muestra los últimos días', (tester) async {
+  testWidgets('El Home muestra las sugerencias recientes', (tester) async {
     await _irAlHome(tester);
 
-    // El ListView construye perezosamente: hay que desplazarse para que la
-    // tarjeta llegue a existir en el árbol.
-    await tester.scrollUntilVisible(
-      find.text('Recent days'),
-      300,
-      scrollable: find.byType(Scrollable).first,
+    await _scrollHome(tester, find.text('Recent suggestions'));
+
+    expect(find.text('Recent suggestions'), findsOneWidget);
+    expect(find.text('Go to HR'), findsOneWidget);
+    expect(find.text('Improve the lunch menu'), findsOneWidget);
+    expect(find.text('In review'), findsOneWidget);
+  });
+
+  testWidgets('El Home ya no muestra los últimos días', (tester) async {
+    await _irAlHome(tester);
+
+
+    expect(
+      find.descendant(
+        of: find.byType(HomePage),
+        matching: find.text('Last 7 days', skipOffstage: false),
+      ),
+      findsNothing,
     );
+  });
+
+  testWidgets('La campana abre el panel de notificaciones', (tester) async {
+    await _irAlHome(tester);
+
+    await tester.tap(find.byIcon(Icons.notifications_outlined));
     await tester.pumpAndSettle();
 
-    expect(find.text('Recent days'), findsOneWidget);
-    expect(find.text('08:58'), findsOneWidget);
-    expect(find.text('09:02'), findsOneWidget);
+    expect(find.text('Notifications'), findsOneWidget);
+    expect(
+      find.text("You'll see recent notifications here"),
+      findsOneWidget,
+    );
   });
 
   testWidgets('La barra inferior tiene las cuatro pestañas', (tester) async {
@@ -498,18 +550,133 @@ void main() {
 
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Attendance'), findsOneWidget);
+    expect(find.text('Attendance'), findsWidgets);
     expect(find.text('HR'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
   });
 
-  testWidgets('Cambiar de pestaña muestra el placeholder', (tester) async {
+  // ---- Attendance ----
+
+  testWidgets('"View all" lleva a la pestaña Attendance', (tester) async {
     await _irAlHome(tester);
 
-    await tester.tap(find.text('Attendance'));
+    await _scrollHome(tester, find.text('View all'));
+    await tester.tap(find.text('View all'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Coming in phase A.2'), findsOneWidget);
+    expect(find.byType(AsistenciaPage), findsOneWidget);
+    expect(find.text('Last 7 days'), findsOneWidget);
+  });
+
+  testWidgets('"Go to HR" lleva a la pestaña HR', (tester) async {
+    await _irAlHome(tester);
+
+    await _scrollHome(tester, find.text('Go to HR'));
+    await tester.tap(find.text('Go to HR'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Coming in phase A.3'), findsOneWidget);
+  });
+
+  testWidgets('Attendance empieza por los últimos 7 días', (tester) async {
+    await _irAAsistencia(tester);
+
+    expect(find.text('Last 7 days'), findsOneWidget);
+    expect(find.text('All punches'), findsOneWidget);
+
+    // "Quick actions" queda bajo el pliegue: el ListView lo construye al llegar.
+    await tester.scrollUntilVisible(
+      find.text('Quick actions'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Quick actions'), findsOneWidget);
+
+    // El resumen del mes solo está en el Home, no se repite aquí.
+    expect(
+      find.descendant(
+        of: find.byType(AsistenciaPage),
+        matching: find.text('Monthly attendance', skipOffstage: false),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Los 7 días muestran los cuatro estados', (tester) async {
+    await _irAAsistencia(tester);
+
+    // Check verde (a tiempo), reloj ámbar (tarde), X roja (falta) y guion.
+    expect(find.byIcon(Icons.check_circle_outline), findsWidgets);
+    expect(find.byIcon(Icons.schedule), findsWidgets);
+    expect(find.byIcon(Icons.cancel_outlined), findsWidgets);
+    expect(find.byIcon(Icons.remove_circle_outline), findsWidgets);
+
+    // La leyenda nombra los cuatro estados.
+    for (final estado in EstadoDia.values) {
+      expect(find.text(estado.etiqueta), findsWidgets);
+    }
+  });
+
+  testWidgets('El icono del AppBar abre el calendario', (tester) async {
+    await _irAAsistencia(tester);
+
+    await tester.tap(find.byIcon(Icons.calendar_today_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CalendarioPage), findsOneWidget);
+    expect(find.text('Calendar'), findsWidgets);
+    expect(find.text('July 2025'), findsOneWidget);
+    // La cabecera de la semana empieza en lunes.
+    expect(find.text('Mon'), findsWidgets);
+    expect(find.text('Sun'), findsWidgets);
+  });
+
+  testWidgets('El calendario marca los días con su estado', (tester) async {
+    await _irAAsistencia(tester);
+    await tester.tap(find.byIcon(Icons.calendar_today_outlined));
+    await tester.pumpAndSettle();
+
+    // Julio 2025 tiene 31 días.
+    expect(find.text('31'), findsOneWidget);
+
+    // Los tres estados del mock aparecen (días + leyenda).
+    for (final estado in MockAsistencia.estadosDelMes.values.toSet()) {
+      expect(find.byIcon(estado.icono), findsWidgets);
+    }
+    // "Pending" no se muestra en el calendario.
+    expect(find.text('Pending'), findsNothing);
+  });
+
+  testWidgets('El calendario cambia de mes', (tester) async {
+    await _irAAsistencia(tester);
+    await tester.tap(find.byIcon(Icons.calendar_today_outlined));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pumpAndSettle();
+    expect(find.text('August 2025'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await tester.pumpAndSettle();
+    expect(find.text('June 2025'), findsOneWidget);
+  });
+
+  testWidgets('Justificar una tardanza lleva a RR. HH.', (tester) async {
+    await _irAAsistencia(tester);
+
+    await tester.scrollUntilVisible(
+      find.text('Justify a late arrival'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Justify a late arrival'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Coming in phase A.3'), findsOneWidget);
   });
 
   // ---- Perfil ----
@@ -528,51 +695,76 @@ void main() {
     expect(find.text('About'), findsOneWidget);
   });
 
-  testWidgets('La información personal son campos rellenables', (tester) async {
+  testWidgets('El perfil no previsualiza los datos personales', (tester) async {
     await _irAlPerfil(tester);
 
+    expect(find.text('Personal information'), findsOneWidget);
+    expect(find.text('Complete your details'), findsOneWidget);
+    expect(find.text('First name'), findsNothing);
+    expect(find.text('Date of birth'), findsNothing);
+    expect(find.byType(InformacionPersonalPage), findsNothing);
+  });
+
+  testWidgets('Personal information abre el formulario', (tester) async {
+    await _irAlInformacion(tester);
+
+    expect(find.byType(InformacionPersonalPage), findsOneWidget);
     expect(find.text('First name'), findsOneWidget);
     expect(find.text('Last name'), findsOneWidget);
     expect(find.text('Date of birth'), findsOneWidget);
     expect(find.text('Age'), findsOneWidget);
-    expect(find.text('Gender'), findsOneWidget);
-
-    await _scrollPerfil(tester, find.text('Save changes'));
-    expect(find.text('Email'), findsOneWidget);
-    expect(find.text('Area'), findsOneWidget);
-    expect(find.text('Position'), findsOneWidget);
     expect(find.byType(DropdownButtonFormField<Genero>), findsOneWidget);
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Position'), findsOneWidget);
   });
 
   testWidgets('Guardar con campos vacíos muestra errores', (tester) async {
-    await _irAlPerfil(tester);
-    await _scrollPerfil(tester, find.text('Save changes'));
+    await _irAlInformacion(tester);
 
+    // El botón queda bajo el pliegue en el viewport de test.
+    await tester.ensureVisible(find.text('Save changes'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Save changes'));
     await tester.pumpAndSettle();
 
     expect(find.text('Enter your first name'), findsWidgets);
     expect(find.text('Enter your email'), findsWidgets);
-    expect(find.text('Profile updated'), findsNothing);
+    // No debe haber vuelto al perfil.
+    expect(find.byType(InformacionPersonalPage), findsOneWidget);
   });
 
   testWidgets('El correo valida su formato', (tester) async {
-    await _irAlPerfil(tester);
-    await _scrollPerfil(tester, find.text('Save changes'));
+    await _irAlInformacion(tester);
 
     final campoCorreo = find.ancestor(
       of: find.text('Enter your email'),
       matching: find.byType(TextFormField),
     );
     await tester.enterText(campoCorreo, 'correo-malo');
+    // El botón queda bajo el pliegue en el viewport de test.
+    await tester.ensureVisible(find.text('Save changes'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Save changes'));
     await tester.pumpAndSettle();
 
     expect(find.text('Invalid email format'), findsOneWidget);
   });
 
-  testWidgets('La foto abre el selector de origen', (tester) async {
+  testWidgets('El perfil solo muestra la foto, no la edita', (tester) async {
     await _irAlPerfil(tester);
+
+    expect(find.byType(PerfilFoto), findsOneWidget);
+    // El botón de cámara y el de añadir foto están en el formulario.
+    expect(find.text('Add photo'), findsNothing);
+    expect(find.byIcon(Icons.photo_camera), findsNothing);
+  });
+
+  testWidgets('La foto se edita desde Personal information', (tester) async {
+    await _irAlInformacion(tester);
+
+    // Es la primera opción del formulario.
+    expect(find.byType(PerfilFoto), findsOneWidget);
+    expect(find.text('Add photo'), findsOneWidget);
 
     await tester.tap(find.text('Add photo'));
     await tester.pumpAndSettle();
@@ -580,6 +772,8 @@ void main() {
     expect(find.text('Profile photo'), findsOneWidget);
     expect(find.text('Take a photo'), findsOneWidget);
     expect(find.text('Choose from gallery'), findsOneWidget);
+    // Sin foto todavía, no hay nada que quitar.
+    expect(find.text('Remove photo'), findsNothing);
   });
 
   testWidgets('El switch de biometría cambia de estado', (tester) async {
@@ -665,7 +859,19 @@ void main() {
     expect(find.text('Welcome to Runway 7 Club'), findsNothing);
   });
 
-  testWidgets('Social networks abre la hoja inferior', (tester) async {
+  testWidgets('About tiene sus cuatro opciones', (tester) async {
+    await _irAlPerfil(tester);
+    await _scrollPerfil(tester, find.text('Terms and Conditions'));
+
+    expect(find.text('Social networks'), findsOneWidget);
+    expect(find.text('Rate the app'), findsOneWidget);
+    expect(find.text('Share the app'), findsOneWidget);
+    expect(find.text('Terms and Conditions'), findsOneWidget);
+    // "Help and support" se retiró.
+    expect(find.text('Help and support'), findsNothing);
+  });
+
+  testWidgets('Social networks abre las redes de la empresa', (tester) async {
     await _irAlPerfil(tester);
     await _scrollPerfil(tester, find.text('Social networks'));
 
@@ -673,12 +879,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(RedesSocialesSheet), findsOneWidget);
-    // Una sola opción en About que abre la hoja con las 5 redes.
-    expect(find.text('Instagram'), findsOneWidget);
-    expect(find.text('LinkedIn'), findsOneWidget);
-    expect(find.text('X (Twitter)'), findsOneWidget);
-    expect(find.text('Facebook'), findsOneWidget);
-    expect(find.text('TikTok'), findsOneWidget);
-    expect(find.text('Save'), findsOneWidget);
+    expect(find.text('Follow us'), findsOneWidget);
+
+    // Las 7 redes de la empresa, con enlace fijo.
+    for (final red in EnlacesEmpresa.redes) {
+      expect(find.text(red.nombre), findsOneWidget);
+    }
+    // Ya no son campos que el empleado rellene.
+    expect(find.byType(TextFormField), findsNothing);
+  });
+
+  test('Los enlaces de la empresa son URLs válidas', () {
+    expect(Uri.tryParse(EnlacesEmpresa.terminos)?.hasScheme, isTrue);
+
+    for (final red in EnlacesEmpresa.redes) {
+      final uri = Uri.tryParse(red.url);
+      expect(uri, isNotNull, reason: '${red.nombre} tiene una URL inválida');
+      expect(uri!.scheme, 'https', reason: '${red.nombre} no usa HTTPS');
+    }
   });
 }

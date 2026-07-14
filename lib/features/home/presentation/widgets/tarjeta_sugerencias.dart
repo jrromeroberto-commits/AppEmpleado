@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../asistencia/data/mock_asistencia.dart';
-import '../../../asistencia/domain/marca.dart';
+import '../../../sugerencias/domain/sugerencia.dart';
 
-/// Tarjeta "Latest punches": las últimas marcas de entrada y salida.
-class TarjetaUltimasMarcas extends StatelessWidget {
-  const TarjetaUltimasMarcas({
+/// Tarjeta "Recent suggestions": las últimas sugerencias enviadas a RR. HH.
+class TarjetaSugerencias extends StatelessWidget {
+  const TarjetaSugerencias({
     super.key,
-    required this.marcas,
+    required this.sugerencias,
     this.onVerTodas,
   });
 
-  final List<Marca> marcas;
-
-  /// Lleva a la pestaña Attendance, donde está el historial completo.
+  final List<Sugerencia> sugerencias;
   final VoidCallback? onVerTodas;
 
   @override
@@ -29,7 +25,7 @@ class TarjetaUltimasMarcas extends StatelessWidget {
             Row(
               children: [
                 const Text(
-                  'Latest punches',
+                  'Recent suggestions',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -47,7 +43,7 @@ class TarjetaUltimasMarcas extends StatelessWidget {
                   child: const Row(
                     children: [
                       Text(
-                        'View all',
+                        'Go to HR',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.primary,
@@ -64,18 +60,18 @@ class TarjetaUltimasMarcas extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            if (marcas.isEmpty)
+            if (sugerencias.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Text(
-                  'No punches recorded yet.',
+                  "You haven't sent any suggestions yet.",
                   style: TextStyle(fontSize: 14, color: AppColors.textoS),
                 ),
               )
             else
-              for (final (i, marca) in marcas.indexed) ...[
-                if (i > 0) const SizedBox(height: 14),
-                _fila(marca),
+              for (final (i, sugerencia) in sugerencias.indexed) ...[
+                if (i > 0) const Divider(height: 24, color: AppColors.borde),
+                _fila(sugerencia),
               ],
           ],
         ),
@@ -83,22 +79,20 @@ class TarjetaUltimasMarcas extends StatelessWidget {
     );
   }
 
-  Widget _fila(Marca marca) {
-    final esEntrada = marca.tipo == TipoMarca.entrada;
-
+  Widget _fila(Sugerencia sugerencia) {
     return Row(
       children: [
         Container(
-          width: 44,
-          height: 44,
+          width: 40,
+          height: 40,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppColors.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            esEntrada ? Icons.login : Icons.logout,
-            size: 22,
+          child: const Icon(
+            Icons.lightbulb_outline,
+            size: 20,
             color: AppColors.primary,
           ),
         ),
@@ -108,43 +102,51 @@ class TarjetaUltimasMarcas extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                DateFormat('EEE dd MMM', 'en_US').format(marca.fechaHora),
-                style: const TextStyle(fontSize: 15, color: AppColors.texto),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                marca.tipo.etiqueta,
+                sugerencia.asunto,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: AppColors.texto,
                 ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                sugerencia.categoria,
+                style: const TextStyle(fontSize: 12, color: AppColors.textoS),
               ),
             ],
           ),
         ),
-        Container(width: 1, height: 40, color: AppColors.borde),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              DateFormat('HH:mm').format(marca.fechaHora),
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.texto,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '${DateFormat('hh:mm a', 'en_US').format(marca.fechaHora)} '
-              '(${MockAsistencia.zonaHoraria})',
-              style: const TextStyle(fontSize: 12, color: AppColors.textoS),
-            ),
-          ],
-        ),
+        const SizedBox(width: 8),
+        _chipEstado(sugerencia.estado),
       ],
+    );
+  }
+
+  Widget _chipEstado(EstadoSugerencia estado) {
+    final color = switch (estado) {
+      EstadoSugerencia.enRevision => AppColors.ambar,
+      EstadoSugerencia.aprobada => AppColors.verde,
+      EstadoSugerencia.desaprobada => AppColors.primary,
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        estado.etiqueta,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
     );
   }
 }

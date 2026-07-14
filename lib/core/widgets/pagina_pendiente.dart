@@ -19,8 +19,15 @@ class PaginaPendiente extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text(
+          titulo,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(

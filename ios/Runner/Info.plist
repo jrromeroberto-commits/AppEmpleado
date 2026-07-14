@@ -49,6 +49,10 @@
 		</dict>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>Runway 7 Club needs the camera to take your profile photo.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Runway 7 Club needs access to your photos to set your profile photo.</string>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
 		<key>UIMainStoryboardFile</key>

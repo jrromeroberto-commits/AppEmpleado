@@ -2,37 +2,50 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../asistencia/data/mock_asistencia.dart';
+import '../../sugerencias/data/mock_sugerencias.dart';
 import 'widgets/home_encabezado.dart';
 import 'widgets/tarjeta_resumen_mes.dart';
+import 'widgets/tarjeta_sugerencias.dart';
 import 'widgets/tarjeta_ultimas_marcas.dart';
-import 'widgets/tarjeta_ultimos_dias.dart';
 
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.onIrAAsistencia, this.onIrARrhh});
+
+  final VoidCallback? onIrAAsistencia;
+  final VoidCallback? onIrARrhh;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: RefreshIndicator(
+    return Scaffold(
+      appBar: AppBar(
+        // La cabecera (avatar + nombre + campana) es alta: el AppBar por
+        // defecto (56) la recortaría.
+        toolbarHeight: 80,
+        automaticallyImplyLeading: false,
+        title: const HomeEncabezado(
+          empleado: MockAsistencia.empleado,
+          hayNotificaciones: false,
+        ),
+      ),
+      body: RefreshIndicator(
         color: AppColors.primary,
         backgroundColor: AppColors.tarjeta,
         onRefresh: _refrescar,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
-            const HomeEncabezado(
-              empleado: MockAsistencia.empleado,
-              hayNotificaciones: true,
-            ),
-            const SizedBox(height: 20),
             TarjetaResumenMes(resumen: MockAsistencia.resumen),
             const SizedBox(height: 16),
-            TarjetaUltimasMarcas(marcas: MockAsistencia.ultimasMarcas),
+            TarjetaUltimasMarcas(
+              marcas: MockAsistencia.ultimasMarcas,
+              onVerTodas: onIrAAsistencia,
+            ),
             const SizedBox(height: 16),
-            TarjetaUltimosDias(dias: MockAsistencia.ultimosDias),
-            const SizedBox(height: 16),
-            _bannerHorario(),
+            TarjetaSugerencias(
+              sugerencias: MockSugerencias.recientes,
+              onVerTodas: onIrARrhh,
+            ),
           ],
         ),
       ),
@@ -41,41 +54,5 @@ class HomePage extends StatelessWidget {
 
   Future<void> _refrescar() async {
     // TODO(backend): recargar el resumen y las marcas desde la API.
-  }
-
-  Widget _bannerHorario() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.info_outline,
-              size: 26,
-              color: AppColors.primary,
-            ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Text(
-                'Your entry time is ${MockAsistencia.horaEntrada} '
-                '(${MockAsistencia.zonaHoraria}). '
-                'Arriving on time earns you points.',
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.4,
-                  color: AppColors.textoS,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: AppColors.textoS,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
