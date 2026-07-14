@@ -6,18 +6,20 @@ class AppTheme {
 
   static final ThemeData dark = ThemeData(
     useMaterial3: true,
-    brightness: Brightness.dark,
+    // El diseño es claro: fondo blanco, contenido y texto oscuros. Solo el
+    // AppBar y la barra de navegación se mantienen negros (definidos abajo).
+    brightness: Brightness.light,
     scaffoldBackgroundColor: AppColors.fondo,
 
-    colorScheme: const ColorScheme.dark(
+    colorScheme: const ColorScheme.light(
       primary: AppColors.primary,
-      onPrimary: AppColors.texto,
-      secondary: AppColors.rojobot,
-      onSecondary: AppColors.texto,
+      onPrimary: AppColors.negroSplash,
+      secondary: AppColors.primary,
+      onSecondary: AppColors.negroSplash,
       surface: AppColors.tarjeta,
       onSurface: AppColors.texto,
-      error: AppColors.rojobot,
-      onError: AppColors.texto,
+      error: AppColors.rojo,
+      onError: AppColors.textoClaro,
       outline: AppColors.borde,
     ),
 
@@ -31,34 +33,38 @@ class AppTheme {
       ),
     ),
 
-    textTheme: ThemeData.dark().textTheme.apply(
+    textTheme: ThemeData.light().textTheme.apply(
       bodyColor: AppColors.texto,
       displayColor: AppColors.texto,
     ),
 
+    // El AppBar se mantiene negro sobre el fondo blanco.
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.fondo,
-      foregroundColor: AppColors.texto,
+      backgroundColor: AppColors.superficie,
+      foregroundColor: AppColors.textoClaro,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: false,
     ),
 
+    // La barra de navegación también negra.
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColors.tarjeta,
-      indicatorColor: AppColors.primary.withValues(alpha: 0.15),
+      backgroundColor: AppColors.superficie,
+      indicatorColor: AppColors.primary.withValues(alpha: 0.18),
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         final seleccionado = states.contains(WidgetState.selected);
         return TextStyle(
           fontSize: 12,
           fontWeight: seleccionado ? FontWeight.w600 : FontWeight.w400,
-          color: seleccionado ? AppColors.primary : AppColors.textoS,
+          color: seleccionado ? AppColors.primary : AppColors.textoClaroS,
         );
       }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         final seleccionado = states.contains(WidgetState.selected);
         return IconThemeData(
-          color: seleccionado ? AppColors.primary : AppColors.textoS,
+          color: seleccionado ? AppColors.primary : AppColors.textoClaroS,
         );
       }),
     ),
@@ -66,7 +72,8 @@ class AppTheme {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.rojobot,
-        foregroundColor: AppColors.texto,
+        // Texto negro sobre el dorado.
+        foregroundColor: AppColors.negroSplash,
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
@@ -88,7 +95,7 @@ class AppTheme {
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.fondo,
+      fillColor: AppColors.campo,
       hintStyle: const TextStyle(color: AppColors.textoS),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 16,
@@ -108,11 +115,11 @@ class AppTheme {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.rojobot),
+        borderSide: const BorderSide(color: AppColors.rojo),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.rojobot, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.rojo, width: 1.5),
       ),
     ),
 

@@ -127,7 +127,7 @@ class _CodigoInputState extends State<CodigoInput> {
           counterText: '',
           contentPadding: EdgeInsets.zero,
           filled: true,
-          fillColor: AppColors.fondo,
+          fillColor: AppColors.campo,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(

@@ -106,7 +106,7 @@ class TarjetaResumenMes extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.negroSplash,
+        color: AppColors.campo,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.borde),
       ),
@@ -148,7 +148,7 @@ class TarjetaResumenMes extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.negroSplash,
+        color: AppColors.campo,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borde),
       ),

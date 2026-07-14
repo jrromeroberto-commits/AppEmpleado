@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
-/// Vista previa de chats y solicitudes (tercera página del onboarding).
+/// Vista previa de la pantalla de HR (tercera página del onboarding): un aviso
+/// de Recursos Humanos y los próximos cumpleaños.
 ///
 /// Los datos son de ejemplo: es una ilustración, no consume el repositorio.
 class OnboardingRrhh extends StatelessWidget {
@@ -12,61 +13,94 @@ class OnboardingRrhh extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _titulo('Chat'),
-                const SizedBox(height: 12),
-                _chat(
-                  icono: Icons.person_outline,
-                  nombre: 'Human Resources',
-                  mensaje: 'Hi, how can we help you?',
-                  hora: '10:30',
-                  noLeidos: 2,
+        _tarjeta(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _chipTipo('Urgent', AppColors.rojo),
+                  const Spacer(),
+                  const Icon(
+                    Icons.push_pin,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    '08 Jul',
+                    style: TextStyle(fontSize: 11, color: AppColors.textoClaroS),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'New attendance policy',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textoClaro,
                 ),
-                const SizedBox(height: 10),
-                _chat(
-                  icono: Icons.shield_outlined,
-                  nombre: 'Administration',
-                  mensaje: 'Reminder: Team meeting today.',
-                  hora: '09:15',
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'The grace period will be five minutes starting August 1st.',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  height: 1.4,
+                  color: AppColors.textoClaroS,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _titulo('My requests'),
-                const SizedBox(height: 12),
-                _solicitud(
-                  icono: Icons.description_outlined,
-                  titulo: 'Absence justification',
-                  detalle: 'May 14, 2025',
-                  estado: 'Pending',
-                  colorEstado: AppColors.ambar,
-                ),
-                const Divider(height: 24),
-                _solicitud(
-                  icono: Icons.lightbulb_outline,
-                  titulo: 'Suggestion',
-                  detalle: 'Cafeteria improvement',
-                  estado: 'Approved',
-                  colorEstado: AppColors.verde,
-                ),
-              ],
-            ),
+        _tarjeta(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.cake_outlined,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  _titulo('Upcoming birthdays'),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _cumple(
+                iniciales: 'VT',
+                nombre: 'Valeria Torres',
+                area: 'Design',
+                esHoy: true,
+              ),
+              const Divider(height: 20, color: AppColors.bordeOscuro),
+              _cumple(
+                iniciales: 'CM',
+                nombre: 'Carlos Medina',
+                area: 'QA',
+                fecha: '11 Jul',
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _tarjeta({required Widget child}) {
+    return Card(
+      color: AppColors.superficie,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+        side: BorderSide(color: AppColors.bordeOscuro),
+      ),
+      child: Padding(padding: const EdgeInsets.all(16), child: child),
     );
   }
 
@@ -76,28 +110,55 @@ class OnboardingRrhh extends StatelessWidget {
       style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: AppColors.texto,
+        color: AppColors.textoClaro,
       ),
     );
   }
 
-  Widget _chat({
-    required IconData icono,
+  Widget _chipTipo(String texto, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.6)),
+      ),
+      child: Text(
+        texto,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _cumple({
+    required String iniciales,
     required String nombre,
-    required String mensaje,
-    required String hora,
-    int noLeidos = 0,
+    required String area,
+    bool esHoy = false,
+    String? fecha,
   }) {
     return Row(
       children: [
         Container(
           width: 36,
           height: 36,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.primary.withValues(alpha: 0.15),
+            color: AppColors.primary.withValues(alpha: esHoy ? 1 : 0.15),
           ),
-          child: Icon(icono, size: 18, color: AppColors.primary),
+          child: Text(
+            iniciales,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: esHoy ? AppColors.negroSplash : AppColors.primary,
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -109,104 +170,45 @@ class OnboardingRrhh extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.texto,
+                  color: AppColors.textoClaro,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
-                mensaje,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 11, color: AppColors.textoS),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              hora,
-              style: const TextStyle(fontSize: 10, color: AppColors.textoS),
-            ),
-            const SizedBox(height: 4),
-            if (noLeidos > 0)
-              Container(
-                width: 18,
-                height: 18,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary,
-                ),
-                child: Text(
-                  '$noLeidos',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.texto,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _solicitud({
-    required IconData icono,
-    required String titulo,
-    required String detalle,
-    required String estado,
-    required Color colorEstado,
-  }) {
-    return Row(
-      children: [
-        Icon(icono, size: 20, color: AppColors.primary),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                titulo,
+                area,
                 style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.texto,
+                  fontSize: 11,
+                  color: AppColors.textoClaroS,
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                detalle,
-                style: const TextStyle(fontSize: 11, color: AppColors.textoS),
               ),
             ],
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: colorEstado.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colorEstado.withValues(alpha: 0.5)),
-          ),
-          child: Text(
-            estado,
-            style: TextStyle(
-              fontSize: 10,
+        if (esHoy)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              'Today 🎉',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: AppColors.negroSplash,
+              ),
+            ),
+          )
+        else
+          Text(
+            fecha ?? '',
+            style: const TextStyle(
+              fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: colorEstado,
+              color: AppColors.primary,
             ),
           ),
-        ),
-        const Icon(
-          Icons.chevron_right,
-          size: 18,
-          color: AppColors.textoS,
-        ),
       ],
     );
   }

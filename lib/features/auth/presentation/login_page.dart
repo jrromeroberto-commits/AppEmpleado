@@ -16,8 +16,36 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
- 
   static const _altoCampo = 60.0;
+
+  /// Los campos del login van sobre una tarjeta negra, así que su relleno y
+  /// bordes son oscuros —no los claros del tema global de la app.
+  static final _inputOscuro = InputDecorationTheme(
+    filled: true,
+    fillColor: AppColors.campoOscuro,
+    hintStyle: const TextStyle(color: AppColors.textoClaroS),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: AppColors.bordeOscuro),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: AppColors.bordeOscuro),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: AppColors.rojo),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: AppColors.rojo, width: 1.5),
+    ),
+  );
 
   final _formKey = GlobalKey<FormState>();
   final _documentoController = TextEditingController();
@@ -70,7 +98,12 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      // El login y el onboarding se mantienen en negro: son la entrada de marca
+      // y empalman con el splash.
+      backgroundColor: AppColors.negroSplash,
+      body: Theme(
+        data: Theme.of(context).copyWith(inputDecorationTheme: _inputOscuro),
+        child: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
@@ -98,12 +131,18 @@ class _LoginPageState extends State<LoginPage> {
             );
           },
         ),
+        ),
       ),
     );
   }
 
   Widget _tarjetaFormulario() {
     return Card(
+      color: AppColors.superficie,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+        side: BorderSide(color: AppColors.bordeOscuro),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -131,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => _ingresar(),
                 autofillHints: const [AutofillHints.password],
-                style: const TextStyle(color: AppColors.texto),
+                style: const TextStyle(color: AppColors.textoClaro),
                 decoration: InputDecoration(
                   hintText: 'Enter your password',
                   prefixIcon: const Icon(
@@ -143,7 +182,7 @@ class _LoginPageState extends State<LoginPage> {
                       _oculta
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
-                      color: AppColors.textoS,
+                      color: AppColors.textoClaroS,
                     ),
                     tooltip: _oculta
                         ? 'Show password'
@@ -169,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: _olvidePassword,
                   child: const Text(
                     'Forgot your password?',
-                    style: TextStyle(color: AppColors.textoS),
+                    style: TextStyle(color: AppColors.textoClaroS),
                   ),
                 ),
               ),
@@ -189,9 +228,9 @@ class _LoginPageState extends State<LoginPage> {
       height: _altoCampo,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.fondo,
+        color: AppColors.campoOscuro,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borde),
+        border: Border.all(color: AppColors.bordeOscuro),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<TipoDocumento>(
@@ -199,17 +238,17 @@ class _LoginPageState extends State<LoginPage> {
           onChanged: (nuevo) {
             if (nuevo != null) _cambiarTipo(nuevo);
           },
-          dropdownColor: AppColors.tarjeta,
+          dropdownColor: AppColors.superficie,
           borderRadius: BorderRadius.circular(14),
           icon: const Icon(
             Icons.keyboard_arrow_down,
-            color: AppColors.textoS,
+            color: AppColors.textoClaroS,
             size: 20,
           ),
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: AppColors.texto,
+            color: AppColors.textoClaro,
           ),
           items: TipoDocumento.values.map((tipo) {
             return DropdownMenuItem(
@@ -237,7 +276,7 @@ class _LoginPageState extends State<LoginPage> {
         FilteringTextInputFormatter.digitsOnly,
         LengthLimitingTextInputFormatter(_tipo.largoMax),
       ],
-      style: const TextStyle(color: AppColors.texto),
+      style: const TextStyle(color: AppColors.textoClaro),
       decoration: InputDecoration(
         hintText: 'Numbers',
         prefixIcon: const Icon(
@@ -254,7 +293,7 @@ class _LoginPageState extends State<LoginPage> {
       style: const TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w500,
-        color: AppColors.texto,
+        color: AppColors.textoClaro,
       ),
     );
   }

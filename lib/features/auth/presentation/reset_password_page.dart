@@ -111,7 +111,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: AppColors.texto,
+            color: AppColors.textoFondo,
           ),
         ),
         const SizedBox(height: 8),
@@ -120,7 +120,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             style: const TextStyle(
               fontSize: 14,
               height: 1.45,
-              color: AppColors.textoS,
+              color: AppColors.textoFondoS,
             ),
             children: [
               const TextSpan(text: 'We sent a 6-digit code to '),
@@ -128,7 +128,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 text: widget.correo,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.texto,
+                  color: AppColors.textoFondo,
                 ),
               ),
               const TextSpan(text: '. Enter it below to continue.'),

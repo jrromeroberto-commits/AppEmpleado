@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/asistencia/presentation/asistencia_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/perfil/presentation/perfil_page.dart';
-import '../widgets/pagina_pendiente.dart';
+import '../../features/rrhh/presentation/rrhh_page.dart';
 
 enum _Pestana { inicio, asistencia, rrhh, perfil }
 class EmpleadoShell extends StatefulWidget {
@@ -26,11 +26,7 @@ class _EmpleadoShellState extends State<EmpleadoShell> {
         onIrARrhh: () => _irA(_Pestana.rrhh),
       ),
       AsistenciaPage(onIrARrhh: () => _irA(_Pestana.rrhh)),
-      const PaginaPendiente(
-        titulo: 'HR',
-        icono: Icons.groups_outlined,
-        fase: 'A.3',
-      ),
+      const RrhhPage(),
       const PerfilPage(),
     ];
 

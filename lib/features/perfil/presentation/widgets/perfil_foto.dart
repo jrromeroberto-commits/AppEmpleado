@@ -58,7 +58,7 @@ class PerfilFoto extends StatelessWidget {
                     color: AppColors.primary,
                     // El borde del color del fondo recorta el círculo del
                     // avatar y hace que el botón se lea como pieza aparte.
-                    border: Border.all(color: AppColors.fondo, width: 3),
+                    border: Border.all(color: AppColors.tarjeta, width: 3),
                   ),
                   child: const Icon(
                     Icons.photo_camera,

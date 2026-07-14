@@ -11,6 +11,11 @@ class OnboardingAsistencia extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: AppColors.superficie,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+        side: BorderSide(color: AppColors.bordeOscuro),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -29,7 +34,7 @@ class OnboardingAsistencia extends StatelessWidget {
                       detalle: 'Entry time',
                     ),
                   ),
-                  Container(width: 1, height: 44, color: AppColors.borde),
+                  Container(width: 1, height: 44, color: AppColors.bordeOscuro),
                   Expanded(
                     child: _marca(
                       icono: Icons.logout,
@@ -46,7 +51,7 @@ class OnboardingAsistencia extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(child: _puntualidad()),
-                  Container(width: 1, height: 76, color: AppColors.borde),
+                  Container(width: 1, height: 76, color: AppColors.bordeOscuro),
                   Expanded(child: _tardanzas()),
                 ],
               ),
@@ -65,7 +70,7 @@ class OnboardingAsistencia extends StatelessWidget {
       style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: AppColors.texto,
+        color: AppColors.textoClaro,
       ),
     );
   }
@@ -77,7 +82,7 @@ class OnboardingAsistencia extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.negroSplash,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.borde),
+        border: Border.all(color: AppColors.bordeOscuro),
       ),
       child: child,
     );
@@ -98,7 +103,7 @@ class OnboardingAsistencia extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               etiqueta,
-              style: const TextStyle(fontSize: 12, color: AppColors.textoS),
+              style: const TextStyle(fontSize: 12, color: AppColors.textoClaroS),
             ),
           ],
         ),
@@ -108,12 +113,12 @@ class OnboardingAsistencia extends StatelessWidget {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColors.texto,
+            color: AppColors.textoClaro,
           ),
         ),
         Text(
           detalle,
-          style: const TextStyle(fontSize: 10, color: AppColors.textoS),
+          style: const TextStyle(fontSize: 10, color: AppColors.textoClaroS),
         ),
       ],
     );
@@ -124,7 +129,7 @@ class OnboardingAsistencia extends StatelessWidget {
       children: [
         const Text(
           'Punctuality this month',
-          style: TextStyle(fontSize: 11, color: AppColors.textoS),
+          style: TextStyle(fontSize: 11, color: AppColors.textoClaroS),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -139,7 +144,7 @@ class OnboardingAsistencia extends StatelessWidget {
                 child: CircularProgressIndicator(
                   value: 0.92,
                   strokeWidth: 5,
-                  backgroundColor: AppColors.borde,
+                  backgroundColor: AppColors.bordeOscuro,
                   valueColor: AlwaysStoppedAnimation(AppColors.primary),
                 ),
               ),
@@ -157,7 +162,7 @@ class OnboardingAsistencia extends StatelessWidget {
         const SizedBox(height: 6),
         const Text(
           'Excellent',
-          style: TextStyle(fontSize: 10, color: AppColors.textoS),
+          style: TextStyle(fontSize: 10, color: AppColors.textoClaroS),
         ),
       ],
     );
@@ -168,7 +173,7 @@ class OnboardingAsistencia extends StatelessWidget {
       children: [
         Text(
           'Late arrivals',
-          style: TextStyle(fontSize: 11, color: AppColors.textoS),
+          style: TextStyle(fontSize: 11, color: AppColors.textoClaroS),
         ),
         SizedBox(height: 14),
         Text(
@@ -176,13 +181,13 @@ class OnboardingAsistencia extends StatelessWidget {
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.bold,
-            color: AppColors.texto,
+            color: AppColors.textoClaro,
           ),
         ),
         SizedBox(height: 8),
         Text(
           'This month',
-          style: TextStyle(fontSize: 10, color: AppColors.textoS),
+          style: TextStyle(fontSize: 10, color: AppColors.textoClaroS),
         ),
       ],
     );
@@ -207,7 +212,7 @@ class OnboardingAsistencia extends StatelessWidget {
       AppColors.verde,
       AppColors.verde,
       AppColors.ambar,
-      AppColors.borde,
+      AppColors.bordeOscuro,
     ];
 
     return Column(
@@ -218,7 +223,7 @@ class OnboardingAsistencia extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: AppColors.texto,
+            color: AppColors.textoClaro,
           ),
         ),
         const SizedBox(height: 10),
@@ -231,7 +236,7 @@ class OnboardingAsistencia extends StatelessWidget {
                   dias[i],
                   style: const TextStyle(
                     fontSize: 10,
-                    color: AppColors.textoS,
+                    color: AppColors.textoClaroS,
                   ),
                 ),
                 const SizedBox(height: 6),

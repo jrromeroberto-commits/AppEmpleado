@@ -49,10 +49,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
     _Pagina(
       icono: Icons.groups_outlined,
-      titulo: 'Connect with HR',
+      titulo: 'Stay in the loop',
       descripcion:
-          'Chat with Human Resources / Administration, justify your absences '
-          'and send suggestions to improve our workplace.',
+          'Read the latest news and notices from HR, and never miss a '
+          "teammate's birthday.",
       contenido: OnboardingRrhh(),
     ),
   ];
@@ -79,6 +79,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.negroSplash,
       body: SafeArea(
         child: Column(
           children: [
@@ -124,7 +125,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 onPressed: _terminar,
                 child: const Text(
                   'Skip',
-                  style: TextStyle(fontSize: 13, color: AppColors.textoS),
+                  style: TextStyle(fontSize: 13, color: AppColors.textoClaroS),
                 ),
               ),
             ),
@@ -162,7 +163,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
           style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
-            color: AppColors.texto,
+            color: AppColors.textoClaro,
           ),
         ),
         if (descripcion != null) ...[
@@ -173,7 +174,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             style: const TextStyle(
               fontSize: 14,
               height: 1.45,
-              color: AppColors.textoS,
+              color: AppColors.textoClaroS,
             ),
           ),
         ],

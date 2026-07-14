@@ -9,7 +9,11 @@ import 'package:app_asistencia/features/asistencia/domain/dia_asistencia.dart';
 import 'package:app_asistencia/features/asistencia/presentation/asistencia_page.dart';
 import 'package:app_asistencia/features/asistencia/presentation/calendario_page.dart';
 import 'package:app_asistencia/features/asistencia/presentation/widgets/estado_dia_visual.dart';
+import 'package:app_asistencia/features/empleados/data/mock_cumpleanos.dart';
 import 'package:app_asistencia/features/home/presentation/home_page.dart';
+import 'package:app_asistencia/features/perfil/presentation/denuncia_anonima_page.dart';
+import 'package:app_asistencia/features/rrhh/data/mock_avisos.dart';
+import 'package:app_asistencia/features/rrhh/presentation/rrhh_page.dart';
 import 'package:app_asistencia/features/auth/domain/tipo_documento.dart';
 import 'package:app_asistencia/features/auth/presentation/reset_password_page.dart';
 import 'package:app_asistencia/features/auth/presentation/widgets/codigo_input.dart';
@@ -185,7 +189,7 @@ void main() {
     expect(find.text('Track your attendance'), findsOneWidget);
 
     await _deslizar(tester);
-    expect(find.text('Connect with HR'), findsOneWidget);
+    expect(find.text('Stay in the loop'), findsOneWidget);
   });
 
   testWidgets('En la última página Skip se vuelve Comenzar', (tester) async {
@@ -508,15 +512,27 @@ void main() {
     expect(find.text('18:07'), findsWidgets);
   });
 
-  testWidgets('El Home muestra las sugerencias recientes', (tester) async {
+  testWidgets('El Home cierra con los próximos cumpleaños', (tester) async {
     await _irAlHome(tester);
 
-    await _scrollHome(tester, find.text('Recent suggestions'));
+    await _scrollHome(tester, find.text('Upcoming birthdays'));
 
-    expect(find.text('Recent suggestions'), findsOneWidget);
+    expect(find.text('Upcoming birthdays'), findsOneWidget);
     expect(find.text('Go to HR'), findsOneWidget);
-    expect(find.text('Improve the lunch menu'), findsOneWidget);
-    expect(find.text('In review'), findsOneWidget);
+    for (final cumple in MockCumpleanos.proximos) {
+      expect(find.text(cumple.nombre), findsOneWidget);
+    }
+    // El cumpleaños de hoy se resalta.
+    expect(find.text('Today 🎉'), findsOneWidget);
+
+    // Las sugerencias ya no están en el Home.
+    expect(
+      find.descendant(
+        of: find.byType(HomePage),
+        matching: find.text('Recent suggestions', skipOffstage: false),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('El Home ya no muestra los últimos días', (tester) async {
@@ -575,7 +591,7 @@ void main() {
     await tester.tap(find.text('Go to HR'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Coming in phase A.3'), findsOneWidget);
+    expect(find.byType(RrhhPage), findsOneWidget);
   });
 
   testWidgets('Attendance empieza por los últimos 7 días', (tester) async {
@@ -676,7 +692,23 @@ void main() {
     await tester.tap(find.text('Justify a late arrival'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Coming in phase A.3'), findsOneWidget);
+    expect(find.byType(RrhhPage), findsOneWidget);
+  });
+
+  // ---- HR ----
+
+  testWidgets('HR muestra las noticias y avisos', (tester) async {
+    await _irAlHome(tester);
+    await _scrollHome(tester, find.text('Go to HR'));
+    await tester.tap(find.text('Go to HR'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RrhhPage), findsOneWidget);
+    // El aviso fijado va primero.
+    final fijado = MockAvisos.publicados.firstWhere((a) => a.fijado);
+    expect(find.text(fijado.titulo), findsOneWidget);
+    expect(find.byIcon(Icons.push_pin), findsOneWidget);
+    expect(find.text('Read more'), findsWidgets);
   });
 
   // ---- Perfil ----
@@ -703,6 +735,46 @@ void main() {
     expect(find.text('First name'), findsNothing);
     expect(find.text('Date of birth'), findsNothing);
     expect(find.byType(InformacionPersonalPage), findsNothing);
+  });
+
+  testWidgets('La denuncia anónima está bajo Personal information', (
+    tester,
+  ) async {
+    await _irAlPerfil(tester);
+
+    expect(find.text('Anonymous report'), findsOneWidget);
+
+    await tester.tap(find.text('Anonymous report'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DenunciaAnonimaPage), findsOneWidget);
+    // El aviso va en un Text.rich: find.text no entra en los spans.
+    expect(
+      find.textContaining('Your identity stays anonymous'),
+      findsOneWidget,
+    );
+    expect(find.text('Type of report'), findsOneWidget);
+    expect(find.text('Reported person'), findsOneWidget);
+    expect(find.text('Description'), findsOneWidget);
+    // Las pruebas son opcionales.
+    expect(find.text('Evidence'), findsOneWidget);
+    expect(find.text('Optional'), findsOneWidget);
+  });
+
+  testWidgets('La denuncia valida sus campos', (tester) async {
+    await _irAlPerfil(tester);
+    await tester.tap(find.text('Anonymous report'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Send report'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Send report'));
+    await tester.pumpAndSettle();
+
+    expect(find.text("Enter the reported person's name"), findsWidgets);
+    expect(find.text('Describe what happened'), findsWidgets);
+    // No se envía sin confirmar.
+    expect(find.byType(AlertDialog), findsNothing);
   });
 
   testWidgets('Personal information abre el formulario', (tester) async {

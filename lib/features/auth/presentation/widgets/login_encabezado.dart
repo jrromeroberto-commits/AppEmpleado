@@ -75,14 +75,14 @@ class _LoginEncabezadoState extends State<LoginEncabezado> {
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.bold,
-            color: AppColors.texto,
+            color: AppColors.textoClaro,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           widget.subtitulo,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 15, color: AppColors.textoS),
+          style: const TextStyle(fontSize: 15, color: AppColors.textoClaroS),
         ),
       ],
     );

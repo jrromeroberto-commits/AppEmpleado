@@ -99,7 +99,7 @@ class AsistenciaPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.negroSplash,
+          color: AppColors.campo,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.borde),
         ),

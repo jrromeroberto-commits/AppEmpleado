@@ -40,13 +40,13 @@ class PaginaPendiente extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.texto,
+                  color: AppColors.textoFondo,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Coming in phase $fase',
-                style: const TextStyle(fontSize: 14, color: AppColors.textoS),
+                style: const TextStyle(fontSize: 14, color: AppColors.textoFondoS),
               ),
             ],
           ),

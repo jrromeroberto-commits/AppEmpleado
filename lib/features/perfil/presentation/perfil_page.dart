@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../auth/presentation/login_page.dart';
 import '../domain/informacion_personal.dart';
 import 'cambiar_password_page.dart';
+import 'denuncia_anonima_page.dart';
 import 'informacion_personal_page.dart';
 import 'widgets/fila_perfil.dart';
 import 'widgets/perfil_foto.dart';
@@ -47,6 +48,12 @@ class _PerfilPageState extends State<PerfilPage> {
     setState(() => _informacion = actualizada);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Profile updated')),
+    );
+  }
+
+  void _denunciar() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const DenunciaAnonimaPage()),
     );
   }
 
@@ -177,10 +184,11 @@ class _PerfilPageState extends State<PerfilPage> {
           const SizedBox(height: 14),
           Text(
             info.nombreCompleto,
+            // Sobre el fondo blanco.
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.texto,
+              color: AppColors.textoFondo,
             ),
           ),
           const SizedBox(height: 2),
@@ -206,6 +214,12 @@ class _PerfilPageState extends State<PerfilPage> {
               ? 'Complete your details'
               : 'Name, birthday, area and position',
           onTap: _editarInformacion,
+        ),
+        FilaAccion(
+          icono: Icons.shield_outlined,
+          titulo: 'Anonymous report',
+          subtitulo: 'Report harassment safely and anonymously',
+          onTap: _denunciar,
           esUltima: true,
         ),
       ],

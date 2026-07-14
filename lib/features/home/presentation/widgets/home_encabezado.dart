@@ -28,10 +28,11 @@ class HomeEncabezado extends StatelessWidget {
                 empleado.nombre,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                // Sobre el AppBar negro.
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.texto,
+                  color: AppColors.textoClaro,
                 ),
               ),
               const SizedBox(height: 2),
@@ -99,11 +100,11 @@ class CampanaNotificaciones extends StatelessWidget {
             height: 48,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.tarjeta,
+              color: AppColors.campoOscuro,
             ),
             child: const Icon(
               Icons.notifications_outlined,
-              color: AppColors.texto,
+              color: AppColors.textoClaro,
             ),
           ),
         );

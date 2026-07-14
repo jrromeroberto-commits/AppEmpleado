@@ -35,6 +35,11 @@ class OnboardingBienvenida extends StatelessWidget {
   /// Tarjeta con las dos garantías de la app: seguridad y fiabilidad.
   Widget _garantias() {
     return Card(
+      color: AppColors.superficie,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+        side: BorderSide(color: AppColors.bordeOscuro),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
         child: IntrinsicHeight(
@@ -50,7 +55,7 @@ class OnboardingBienvenida extends StatelessWidget {
               const VerticalDivider(
                 width: 1,
                 thickness: 1,
-                color: AppColors.borde,
+                color: AppColors.bordeOscuro,
               ),
               Expanded(
                 child: _garantia(
@@ -80,7 +85,7 @@ class OnboardingBienvenida extends StatelessWidget {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: AppColors.texto,
+            color: AppColors.textoClaro,
           ),
         ),
         const SizedBox(height: 4),
@@ -92,7 +97,7 @@ class OnboardingBienvenida extends StatelessWidget {
             style: const TextStyle(
               fontSize: 12,
               height: 1.35,
-              color: AppColors.textoS,
+              color: AppColors.textoClaroS,
             ),
           ),
         ),
@@ -175,7 +180,7 @@ class OnboardingBienvenida extends StatelessWidget {
       width: 78,
       height: 140,
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textoS, width: 2),
+        border: Border.all(color: AppColors.textoClaroS, width: 2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Column(

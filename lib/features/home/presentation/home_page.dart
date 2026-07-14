@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../asistencia/data/mock_asistencia.dart';
-import '../../sugerencias/data/mock_sugerencias.dart';
+import '../../empleados/data/mock_cumpleanos.dart';
 import 'widgets/home_encabezado.dart';
+import 'widgets/tarjeta_cumpleanos.dart';
 import 'widgets/tarjeta_resumen_mes.dart';
-import 'widgets/tarjeta_sugerencias.dart';
 import 'widgets/tarjeta_ultimas_marcas.dart';
 
-
+/// Home del empleado: una tarjeta por cada sección, con acceso a su pestaña.
 class HomePage extends StatelessWidget {
   const HomePage({super.key, this.onIrAAsistencia, this.onIrARrhh});
 
@@ -42,9 +42,10 @@ class HomePage extends StatelessWidget {
               onVerTodas: onIrAAsistencia,
             ),
             const SizedBox(height: 16),
-            TarjetaSugerencias(
-              sugerencias: MockSugerencias.recientes,
-              onVerTodas: onIrARrhh,
+            // Va al final de la pantalla, como último bloque.
+            TarjetaCumpleanos(
+              cumpleanos: MockCumpleanos.proximos,
+              onVerTodos: onIrARrhh,
             ),
           ],
         ),

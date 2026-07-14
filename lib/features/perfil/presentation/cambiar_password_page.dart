@@ -74,7 +74,7 @@ class _CambiarPasswordPageState extends State<CambiarPasswordPage> {
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.45,
-                    color: AppColors.textoS,
+                    color: AppColors.textoFondoS,
                   ),
                 ),
                 const SizedBox(height: 24),

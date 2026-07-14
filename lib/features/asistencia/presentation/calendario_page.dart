@@ -75,7 +75,7 @@ class _CalendarioPageState extends State<CalendarioPage> {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: AppColors.texto,
+            color: AppColors.textoFondo,
           ),
         ),
         IconButton(

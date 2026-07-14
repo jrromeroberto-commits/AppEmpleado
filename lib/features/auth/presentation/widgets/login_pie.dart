@@ -22,7 +22,7 @@ class LoginPie extends StatelessWidget {
           child: Center(
             child: Text(
               version,
-              style: const TextStyle(fontSize: 13, color: AppColors.textoS),
+              style: const TextStyle(fontSize: 13, color: AppColors.textoClaroS),
             ),
           ),
         );
