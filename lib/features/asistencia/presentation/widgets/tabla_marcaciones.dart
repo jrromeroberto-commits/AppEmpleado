@@ -6,10 +6,15 @@ import '../../domain/dia_asistencia.dart';
 import 'estado_dia_visual.dart';
 
 /// Tabla "All punches": día, entrada y salida de cada jornada.
+///
+/// Los días tarde o de falta son pulsables: llevan al formulario con esa fecha
+/// ya puesta.
 class TablaMarcaciones extends StatelessWidget {
-  const TablaMarcaciones({super.key, required this.dias});
+  const TablaMarcaciones({super.key, required this.dias, this.onJustificar});
 
   final List<DiaAsistencia> dias;
+
+  final void Function(DiaAsistencia dia)? onJustificar;
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +40,28 @@ class TablaMarcaciones extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _cabecera(),
-            const SizedBox(height: 8),
-            for (final (i, dia) in conRegistro.indexed) ...[
-              if (i > 0) const Divider(height: 1, color: AppColors.borde),
-              _fila(dia),
+            if (conRegistro.isEmpty)
+              _vacio()
+            else ...[
+              _cabecera(),
+              const SizedBox(height: 8),
+              for (final (i, dia) in conRegistro.indexed) ...[
+                if (i > 0) const Divider(height: 1, color: AppColors.borde),
+                _fila(dia),
+              ],
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _vacio() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 20),
+      child: Text(
+        'No punches recorded yet.',
+        style: TextStyle(fontSize: 14, color: AppColors.textoS),
       ),
     );
   }
@@ -59,13 +78,27 @@ class TablaMarcaciones extends StatelessWidget {
         Expanded(flex: 4, child: Text('Day', style: estilo)),
         Expanded(flex: 3, child: Text('In', style: estilo)),
         Expanded(flex: 3, child: Text('Out', style: estilo)),
+        // Alinea con la columna del chevron de las filas.
+        SizedBox(width: 18),
       ],
     );
   }
 
   Widget _fila(DiaAsistencia dia) {
     final esFalta = dia.estado == EstadoDia.falta;
+    final justificable =
+        dia.estado == EstadoDia.tarde || dia.estado == EstadoDia.falta;
 
+    return InkWell(
+      onTap: justificable && onJustificar != null
+          ? () => onJustificar!(dia)
+          : null,
+      borderRadius: BorderRadius.circular(10),
+      child: _contenidoFila(dia, esFalta, justificable),
+    );
+  }
+
+  Widget _contenidoFila(DiaAsistencia dia, bool esFalta, bool justificable) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
@@ -96,6 +129,18 @@ class TablaMarcaciones extends StatelessWidget {
           ),
           Expanded(flex: 3, child: _hora(dia.entrada, esFalta)),
           Expanded(flex: 3, child: _hora(dia.salida, esFalta)),
+          // El chevron solo en los días que llevan a algún sitio; en el resto
+          // se reserva su ancho para que las columnas no se descuadren.
+          SizedBox(
+            width: 18,
+            child: justificable && onJustificar != null
+                ? const Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: AppColors.primary,
+                  )
+                : null,
+          ),
         ],
       ),
     );

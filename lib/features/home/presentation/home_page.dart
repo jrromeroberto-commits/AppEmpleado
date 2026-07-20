@@ -33,6 +33,9 @@ class HomePage extends StatelessWidget {
         backgroundColor: AppColors.tarjeta,
         onRefresh: _refrescar,
         child: ListView(
+          // Sin esto, el gesto de recargar no funciona cuando el contenido no
+          // llena la pantalla (por ejemplo, con el perfil recién creado).
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
             TarjetaResumenMes(resumen: MockAsistencia.resumen),

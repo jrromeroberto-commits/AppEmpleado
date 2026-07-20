@@ -1,15 +1,50 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../justificaciones/domain/justificacion.dart';
+import '../../justificaciones/presentation/justificaciones_page.dart';
+import '../../justificaciones/presentation/nueva_justificacion_page.dart';
 import '../data/mock_asistencia.dart';
+import '../domain/dia_asistencia.dart';
 import 'calendario_page.dart';
+import 'historial_page.dart';
 import 'widgets/tabla_marcaciones.dart';
 import 'widgets/tarjeta_ultimos_dias.dart';
 
 class AsistenciaPage extends StatelessWidget {
   const AsistenciaPage({super.key, this.onIrARrhh});
-  /// Lleva a la pestaña de RR. HH. (para justificar una tardanza).
+
+  /// Lleva a la pestaña de RR. HH.
   final VoidCallback? onIrARrhh;
+
+  /// Abre el formulario de justificación para [dia].
+  ///
+  /// Solo los días tarde o de falta se pueden justificar; en el resto no hace
+  /// nada.
+  static Future<void> justificarDia(BuildContext context, DiaAsistencia dia) {
+    final tipo = TipoJustificacion.desdeEstado(dia.estado);
+    if (tipo == null) return Future.value();
+
+    return _abrirJustificacion(context, fecha: dia.fecha, tipo: tipo);
+  }
+
+  static Future<void> _abrirJustificacion(
+    BuildContext context, {
+    DateTime? fecha,
+    TipoJustificacion? tipo,
+  }) async {
+    final enviada = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => NuevaJustificacionPage(fecha: fecha, tipo: tipo),
+      ),
+    );
+
+    if (enviada != true || !context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Justification sent to HR')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +74,10 @@ class AsistenciaPage extends StatelessWidget {
         children: [
           TarjetaUltimosDias(dias: MockAsistencia.ultimosDias),
           const SizedBox(height: 16),
-          TablaMarcaciones(dias: MockAsistencia.ultimosDias),
+          TablaMarcaciones(
+            dias: MockAsistencia.ultimosDias,
+            onJustificar: (dia) => justificarDia(context, dia),
+          ),
           const SizedBox(height: 16),
           _accionesRapidas(context),
         ],
@@ -68,7 +106,9 @@ class AsistenciaPage extends StatelessWidget {
               icono: Icons.edit_note,
               titulo: 'Justify a late arrival',
               subtitulo: 'Send your justification to HR',
-              onTap: onIrARrhh,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const JustificacionesPage()),
+              ),
             ),
             const SizedBox(height: 12),
             _accion(
@@ -76,8 +116,8 @@ class AsistenciaPage extends StatelessWidget {
               icono: Icons.description_outlined,
               titulo: 'Full history',
               subtitulo: 'Review all your punches',
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Full history: coming soon')),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const HistorialPage()),
               ),
             ),
           ],

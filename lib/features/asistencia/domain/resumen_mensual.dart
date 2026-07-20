@@ -28,10 +28,15 @@ class ResumenMensual {
   /// Hora de la primera marca de hoy. `null` si aún no ha marcado.
   final DateTime? horaMarcaHoy;
 
+  /// Días con registro en el mes.
+  int get totalRegistros => tardanzas + asistencias + faltas;
+
+  /// El mes aún no tiene ninguna marca.
+  bool get sinRegistros => totalRegistros == 0;
+
   /// Porcentaje de tardanzas sobre los días con registro del mes.
   double get porcentajeTardanzas {
-    final total = tardanzas + asistencias + faltas;
-    if (total == 0) return 0;
-    return tardanzas / total;
+    if (sinRegistros) return 0;
+    return tardanzas / totalRegistros;
   }
 }

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/mock_asistencia.dart';
 import '../domain/dia_asistencia.dart';
+import 'asistencia_page.dart';
 import 'widgets/estado_dia_visual.dart';
 
 
@@ -148,37 +149,53 @@ class _CalendarioPageState extends State<CalendarioPage> {
     final estado = MockAsistencia.estadoDe(fecha);
     final esHoy = fecha == MockAsistencia.hoy;
 
-    return Container(
-      height: 54,
-      margin: const EdgeInsets.symmetric(horizontal: 2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: esHoy ? AppColors.primary.withValues(alpha: 0.1) : null,
-        border: Border.all(
-          color: esHoy ? AppColors.primary : Colors.transparent,
+    // Solo los días tarde o de falta llevan al formulario.
+    final justificable =
+        estado == EstadoDia.tarde || estado == EstadoDia.falta;
+
+    return InkWell(
+      onTap: justificable ? () => _justificar(fecha, estado!) : null,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 54,
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: esHoy ? AppColors.primary.withValues(alpha: 0.1) : null,
+          border: Border.all(
+            color: esHoy ? AppColors.primary : Colors.transparent,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$numeroDia',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: esHoy ? FontWeight.bold : FontWeight.normal,
+                color: AppColors.texto,
+              ),
+            ),
+            const SizedBox(height: 4),
+            // Altura reservada aunque no haya icono, para que las filas no
+            // bailen.
+            SizedBox(
+              height: 18,
+              child: estado == null
+                  ? null
+                  : Icon(estado.icono, size: 16, color: estado.color),
+            ),
+          ],
         ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '$numeroDia',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: esHoy ? FontWeight.bold : FontWeight.normal,
-              color: AppColors.texto,
-            ),
-          ),
-          const SizedBox(height: 4),
-          // Altura reservada aunque no haya icono, para que las filas no bailen.
-          SizedBox(
-            height: 18,
-            child: estado == null
-                ? null
-                : Icon(estado.icono, size: 16, color: estado.color),
-          ),
-        ],
-      ),
+    );
+  }
+
+  Future<void> _justificar(DateTime fecha, EstadoDia estado) {
+    return AsistenciaPage.justificarDia(
+      context,
+      DiaAsistencia(fecha: fecha, estado: estado),
     );
   }
 

@@ -30,24 +30,58 @@ class TarjetaUltimosDias extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            // Scroll horizontal: en pantallas estrechas 7 días no caben.
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final (i, dia) in recientesPrimero.indexed) ...[
-                    if (i > 0) const SizedBox(width: 6),
-                    _columnaDia(dia),
+            if (dias.isEmpty)
+              _vacio()
+            else ...[
+              // Scroll horizontal: en pantallas estrechas 7 días no caben.
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final (i, dia) in recientesPrimero.indexed) ...[
+                      if (i > 0) const SizedBox(width: 6),
+                      _columnaDia(dia),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 18),
-            const Divider(height: 1, color: AppColors.borde),
-            const SizedBox(height: 14),
-            _leyenda(),
+              const SizedBox(height: 18),
+              const Divider(height: 1, color: AppColors.borde),
+              const SizedBox(height: 14),
+              _leyenda(),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _vacio() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        children: [
+          Icon(
+            Icons.calendar_month_outlined,
+            size: 36,
+            color: AppColors.textoS,
+          ),
+          SizedBox(height: 12),
+          Text(
+            'No attendance recorded yet',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.texto,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Your last 7 days will show up here once you start clocking in.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: AppColors.textoS),
+          ),
+        ],
       ),
     );
   }

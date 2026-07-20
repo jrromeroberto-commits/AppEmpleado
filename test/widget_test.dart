@@ -3,16 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:app_asistencia/core/config/enlaces_empresa.dart';
+import 'package:app_asistencia/core/theme/app_theme.dart';
 import 'package:app_asistencia/core/router/empleado_shell.dart';
 import 'package:app_asistencia/features/asistencia/data/mock_asistencia.dart';
 import 'package:app_asistencia/features/asistencia/domain/dia_asistencia.dart';
 import 'package:app_asistencia/features/asistencia/presentation/asistencia_page.dart';
 import 'package:app_asistencia/features/asistencia/presentation/calendario_page.dart';
+import 'package:app_asistencia/features/asistencia/domain/marca.dart';
 import 'package:app_asistencia/features/asistencia/presentation/widgets/estado_dia_visual.dart';
-import 'package:app_asistencia/features/empleados/data/mock_cumpleanos.dart';
+import 'package:app_asistencia/features/asistencia/presentation/widgets/tabla_marcaciones.dart';
+import 'package:app_asistencia/features/asistencia/presentation/widgets/tarjeta_ultimos_dias.dart';
+import 'package:app_asistencia/features/empleados/domain/cumpleanos.dart';
+import 'package:app_asistencia/features/home/presentation/widgets/tarjeta_cumpleanos.dart';
+import 'package:app_asistencia/features/home/presentation/widgets/tarjeta_ultimas_marcas.dart';
+import 'package:app_asistencia/features/justificaciones/domain/justificacion.dart';
+import 'package:app_asistencia/features/justificaciones/presentation/justificaciones_page.dart';
+import 'package:app_asistencia/features/justificaciones/presentation/nueva_justificacion_page.dart';
 import 'package:app_asistencia/features/home/presentation/home_page.dart';
 import 'package:app_asistencia/features/perfil/presentation/denuncia_anonima_page.dart';
-import 'package:app_asistencia/features/rrhh/data/mock_avisos.dart';
 import 'package:app_asistencia/features/rrhh/presentation/rrhh_page.dart';
 import 'package:app_asistencia/features/auth/domain/tipo_documento.dart';
 import 'package:app_asistencia/features/auth/presentation/reset_password_page.dart';
@@ -154,6 +162,38 @@ Future<void> _escribirCodigo(WidgetTester tester, String codigo) async {
     await tester.pumpAndSettle();
   }
 }
+
+/// Monta un widget suelto con el tema de la app.
+///
+/// Los datos provisionales están vacíos (así se ve la app recién estrenada),
+/// así que lo que se renderiza CON datos se prueba aquí, inyectándolos.
+Future<void> _pump(WidgetTester tester, Widget widget) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: AppTheme.dark,
+      home: Scaffold(body: SingleChildScrollView(child: widget)),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Días de ejemplo con los cuatro estados representados.
+final _diasDeEjemplo = <DiaAsistencia>[
+  DiaAsistencia(
+    fecha: DateTime(2026, 7, 2),
+    estado: EstadoDia.aTiempo,
+    entrada: DateTime(2026, 7, 2, 8, 58),
+    salida: DateTime(2026, 7, 2, 18, 5),
+  ),
+  DiaAsistencia(
+    fecha: DateTime(2026, 7, 3),
+    estado: EstadoDia.tarde,
+    entrada: DateTime(2026, 7, 3, 9, 2),
+    salida: DateTime(2026, 7, 3, 18, 6),
+  ),
+  DiaAsistencia(fecha: DateTime(2026, 7, 5), estado: EstadoDia.pendiente),
+  DiaAsistencia(fecha: DateTime(2026, 7, 7), estado: EstadoDia.falta),
+];
 
 void main() {
   testWidgets('La app arranca mostrando el splash con el logo', (tester) async {
@@ -483,7 +523,7 @@ void main() {
         (MockAsistencia.resumen.porcentajeTardanzas * 100).round();
 
     expect(find.text('Monthly attendance'), findsOneWidget);
-    expect(find.text('July 2025'), findsOneWidget);
+    expect(find.text('July 2026'), findsOneWidget);
     expect(find.text('$porcentaje%'), findsOneWidget);
     expect(find.text('Late arrivals'), findsOneWidget);
   });
@@ -502,14 +542,39 @@ void main() {
     expect(find.text(resumen.estadoHoy.etiqueta), findsWidgets);
   });
 
-  testWidgets('El Home muestra las últimas marcas', (tester) async {
+  testWidgets('Sin marcas, el Home lo dice en vez de dejar el hueco', (
+    tester,
+  ) async {
     await _irAlHome(tester);
 
     expect(find.text('Latest punches'), findsOneWidget);
+    expect(find.text('No punches recorded yet.'), findsOneWidget);
+  });
+
+  testWidgets('Con marcas, el Home las lista', (tester) async {
+    await _pump(
+      tester,
+      TarjetaUltimasMarcas(
+        marcas: [
+          Marca(
+            id: 'm1',
+            fechaHora: DateTime(2026, 7, 8, 8, 56),
+            tipo: TipoMarca.entrada,
+          ),
+          Marca(
+            id: 'm2',
+            fechaHora: DateTime(2026, 7, 7, 18, 7),
+            tipo: TipoMarca.salida,
+          ),
+        ],
+      ),
+    );
+
     expect(find.text('Clock in'), findsOneWidget);
     expect(find.text('Clock out'), findsOneWidget);
     expect(find.text('08:56'), findsOneWidget);
-    expect(find.text('18:07'), findsWidgets);
+    expect(find.text('18:07'), findsOneWidget);
+    expect(find.text('No punches recorded yet.'), findsNothing);
   });
 
   testWidgets('El Home cierra con los próximos cumpleaños', (tester) async {
@@ -519,11 +584,8 @@ void main() {
 
     expect(find.text('Upcoming birthdays'), findsOneWidget);
     expect(find.text('Go to HR'), findsOneWidget);
-    for (final cumple in MockCumpleanos.proximos) {
-      expect(find.text(cumple.nombre), findsOneWidget);
-    }
-    // El cumpleaños de hoy se resalta.
-    expect(find.text('Today 🎉'), findsOneWidget);
+    // Sin nadie registrado todavía.
+    expect(find.text('No birthdays coming up.'), findsOneWidget);
 
     // Las sugerencias ya no están en el Home.
     expect(
@@ -533,6 +595,33 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('Con cumpleaños, el de hoy se resalta', (tester) async {
+    await _pump(
+      tester,
+      TarjetaCumpleanos(
+        cumpleanos: [
+          Cumpleanos(
+            empleadoId: '2',
+            nombre: 'Valeria Torres',
+            area: 'Design',
+            fecha: MockAsistencia.hoy,
+          ),
+          Cumpleanos(
+            empleadoId: '3',
+            nombre: 'Carlos Medina',
+            area: 'QA',
+            fecha: MockAsistencia.hoy.add(const Duration(days: 3)),
+          ),
+        ],
+      ),
+    );
+
+    expect(find.text('Valeria Torres'), findsOneWidget);
+    expect(find.text('Today 🎉'), findsOneWidget);
+    expect(find.text('Carlos Medina'), findsOneWidget);
+    expect(find.text('in 3 days'), findsOneWidget);
   });
 
   testWidgets('El Home ya no muestra los últimos días', (tester) async {
@@ -619,12 +708,20 @@ void main() {
     );
   });
 
-  testWidgets('Los 7 días muestran los cuatro estados', (tester) async {
+  testWidgets('Sin asistencia, Attendance lo dice', (tester) async {
     await _irAAsistencia(tester);
 
-    // Check verde (a tiempo), reloj ámbar (tarde), X roja (falta) y guion.
+    expect(find.text('No attendance recorded yet'), findsOneWidget);
+    expect(find.text('No punches recorded yet.'), findsWidgets);
+  });
+
+  testWidgets('Con datos, los días muestran su estado y la leyenda', (
+    tester,
+  ) async {
+    await _pump(tester, TarjetaUltimosDias(dias: _diasDeEjemplo));
+
+    // Check (a tiempo y tarde), X (falta) y guion (sin marcar).
     expect(find.byIcon(Icons.check_circle_outline), findsWidgets);
-    expect(find.byIcon(Icons.schedule), findsWidgets);
     expect(find.byIcon(Icons.cancel_outlined), findsWidgets);
     expect(find.byIcon(Icons.remove_circle_outline), findsWidgets);
 
@@ -642,7 +739,7 @@ void main() {
 
     expect(find.byType(CalendarioPage), findsOneWidget);
     expect(find.text('Calendar'), findsWidgets);
-    expect(find.text('July 2025'), findsOneWidget);
+    expect(find.text('July 2026'), findsOneWidget);
     // La cabecera de la semana empieza en lunes.
     expect(find.text('Mon'), findsWidgets);
     expect(find.text('Sun'), findsWidgets);
@@ -653,7 +750,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.calendar_today_outlined));
     await tester.pumpAndSettle();
 
-    // Julio 2025 tiene 31 días.
+    // Julio tiene 31 días.
     expect(find.text('31'), findsOneWidget);
 
     // Los tres estados del mock aparecen (días + leyenda).
@@ -671,15 +768,19 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.chevron_right));
     await tester.pumpAndSettle();
-    expect(find.text('August 2025'), findsOneWidget);
+    expect(find.text('August 2026'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.chevron_left));
     await tester.tap(find.byIcon(Icons.chevron_left));
     await tester.pumpAndSettle();
-    expect(find.text('June 2025'), findsOneWidget);
+    expect(find.text('June 2026'), findsOneWidget);
   });
 
-  testWidgets('Justificar una tardanza lleva a RR. HH.', (tester) async {
+  // ---- Justificaciones ----
+
+  testWidgets('"Justify a late arrival" abre las justificaciones', (
+    tester,
+  ) async {
     await _irAAsistencia(tester);
 
     await tester.scrollUntilVisible(
@@ -692,23 +793,114 @@ void main() {
     await tester.tap(find.text('Justify a late arrival'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(RrhhPage), findsOneWidget);
+    expect(find.byType(JustificacionesPage), findsOneWidget);
+    expect(find.text('New justification'), findsOneWidget);
+    expect(find.text('My justifications'), findsOneWidget);
+    // Todavía no se ha enviado ninguna.
+    expect(find.text('Nothing to justify yet'), findsOneWidget);
+  });
+
+  testWidgets('El formulario general abre sin fecha puesta', (tester) async {
+    await _irAAsistencia(tester);
+    await tester.scrollUntilVisible(
+      find.text('Justify a late arrival'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Justify a late arrival'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('New justification'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NuevaJustificacionPage), findsOneWidget);
+    expect(find.text('What are you justifying?'), findsOneWidget);
+    expect(find.text('Reason'), findsOneWidget);
+    expect(find.text('Evidence'), findsOneWidget);
+    // Sin fecha: hay que elegirla.
+    final campoFecha = tester.widget<TextFormField>(
+      find.ancestor(
+        of: find.text('Select the day'),
+        matching: find.byType(TextFormField),
+      ),
+    );
+    expect(campoFecha.controller!.text, isEmpty);
+  });
+
+  testWidgets('Llegar desde un día fija la fecha y deduce el tipo', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: NuevaJustificacionPage(
+          fecha: DateTime(2026, 7, 7),
+          tipo: TipoJustificacion.falta,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Absence'), findsOneWidget);
+    expect(find.text('Tue 07 Jul 2026'), findsOneWidget);
+    // Viene del día seleccionado: no se puede cambiar.
+    expect(find.text('Taken from the day you selected'), findsOneWidget);
+  });
+
+  testWidgets('Solo los días tarde o de falta se pueden justificar', (
+    tester,
+  ) async {
+    final justificados = <DiaAsistencia>[];
+
+    await _pump(
+      tester,
+      TablaMarcaciones(
+        dias: _diasDeEjemplo,
+        onJustificar: justificados.add,
+      ),
+    );
+
+    // Un día a tiempo no hace nada.
+    await tester.tap(find.text('Thu 02 Jul'));
+    await tester.pumpAndSettle();
+    expect(justificados, isEmpty);
+
+    // Uno de falta sí.
+    await tester.tap(find.text('Tue 07 Jul'));
+    await tester.pumpAndSettle();
+    expect(justificados.single.estado, EstadoDia.falta);
+  });
+
+  testWidgets('La justificación valida sus campos', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: NuevaJustificacionPage()),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Send justification'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Send justification'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explain what happened'), findsWidgets);
+    expect(find.text('Select the day to justify'), findsWidgets);
   });
 
   // ---- HR ----
 
-  testWidgets('HR muestra las noticias y avisos', (tester) async {
+  testWidgets('HR muestra sus secciones aunque no haya avisos', (tester) async {
     await _irAlHome(tester);
     await _scrollHome(tester, find.text('Go to HR'));
     await tester.tap(find.text('Go to HR'));
     await tester.pumpAndSettle();
 
     expect(find.byType(RrhhPage), findsOneWidget);
-    // El aviso fijado va primero.
-    final fijado = MockAvisos.publicados.firstWhere((a) => a.fijado);
-    expect(find.text(fijado.titulo), findsOneWidget);
-    expect(find.byIcon(Icons.push_pin), findsOneWidget);
-    expect(find.text('Read more'), findsWidgets);
+    expect(find.text('Upcoming birthdays'), findsWidgets);
+    expect(find.text('News & notices'), findsOneWidget);
+    // Sin avisos publicados todavía.
+    expect(find.text('No news yet'), findsOneWidget);
+    expect(find.text('Read more'), findsNothing);
   });
 
   // ---- Perfil ----
